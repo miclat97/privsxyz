@@ -1,0 +1,10 @@
+﻿@{
+    ViewData["Title"] = "Prywatne wiadomosci";
+}
+<h4>Pamiętaj, że po zamknięciu tej karty przeglądarki nie będzie żadnej możliwości na odzyskanie poniższej wiadomości!</h4>
+Treść wiadomości:<br /><br />
+<textarea readonly class="form-control"
+          cols="80"
+          id="Message"
+          name="Message"
+          rows="12">@ViewBag.messageText</textarea>

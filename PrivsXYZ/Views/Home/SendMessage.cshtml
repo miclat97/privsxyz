@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Prywatne wiadomosci";
+}
+<h4>Zaszyfrowano wiadomość pomyślnie.</h4><br />
+<h4>Skopiuj poniższy link i wyślij go osobie, której chcesz przekazać swoją prywatną wiadomość</h4><br /><br />
+<textarea readonly class="form-control"
+          cols="80"
+          id="Message"
+          name="Message"
+          rows="1">@ViewBag.Link</textarea>
+<br /><br />
+<button onclick="copyLink()">Kopiuj link do schowka</button>
+
+<script>
+    function copyLink() {
+        var copyText = document.getElementById("Message");
+        copyText.select();
+        document.execCommand("copy");
+    }
+</script>

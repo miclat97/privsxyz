@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Prywatne wiadomosci";
+}
+
+
+<center>
+    <h4>Pamiętaj, że po zamknięciu tej karty przeglądarki nie będzie żadnej możliwości na odzyskanie poniższego zdjęcia!</h4>
+    <br /><br />
+
+    @if (ViewBag.Image != null)
+    {
+        <div class="imgbox">
+
+            <img style="max-width: 99%; max-height: 99%; margin:auto" src="data:image;base64,@System.Convert.ToBase64String(ViewBag.Image)" />
+        </div>
+    }
+    else
+    {
+        @:Nie ma takiego zdjęcia, bądź zły klucz do odszyfrowania!
+    }
+
+</center>

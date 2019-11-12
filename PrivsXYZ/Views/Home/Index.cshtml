@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Prywatne wiadomosci";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Witaj na Privs.xyz!</h1>
+    <center>
+        <h4>Wpisz poniżej treść prywatnej wiadomości. Następnie otrzymasz linka, którego będziesz mógł przekazać wybranej osobie. Pamiętaj, że dana osoba będzie mogła odczytać wiadomość tylko 1 raz.</h4>
+        <br />
+        Dodatkowo pamiętaj, że dane są szyfrowane (m. in.) na podstawie klucza wygenerowanego w linku - oznacza to, że nikt - nawet administracja serwisu nie jest i nigdy nie będzie w stanie odczytać Twojej wiadomości!<br /><br />
+    </center><br /><br />
+    @*<form action="SendMessage" method="post" enctype="text/plain">
+            <div>
+                <textarea id="ContactName" name="ContactName" cols="80" rows="12"></textarea>
+                <br><br><br>
+                <input type="submit" value="Zaszyfruj i wyślij wiadomość!">
+            </div>
+        </form>*@
+
+    <form id="form1" method="post" action="SendMessage"
+          enctype="application/x-www-form-urlencoded">
+        @*<div>
+                <input name="Message" type="text" />
+            </div>*@
+        <div>
+            <textarea class="form-control"
+                      cols="80"
+                      id="Message"
+                      name="Message"
+                      rows="12"></textarea>
+        </div><br />
+        <div>
+            <input type="submit" value="Wygeneruj link i zaszyfruj!" />
+        </div>
+    </form>
+</div>
