@@ -16,11 +16,15 @@ namespace PrivsXYZ.Controllers
     {
         private readonly IMessageService _messageService;
         private readonly IPhotoService _photoService;
+        private readonly IFileService _fileService;
 
-        public HomeController(IMessageService messageService, IPhotoService photoService)
+        private const int MaxFileSizeMB = 5 * 1024 * 1024;
+
+        public HomeController(IMessageService messageService, IPhotoService photoService, IFileService fileService)
         {
             _messageService = messageService;
             _photoService = photoService;
+            _fileService = fileService;
         }
 
         public IActionResult Index()
@@ -30,6 +34,12 @@ namespace PrivsXYZ.Controllers
 
         [HttpGet("Photo")]
         public IActionResult Photo()
+        {
+            return View();
+        }
+
+        [HttpGet("File")]
+        public IActionResult File()
         {
             return View();
         }
@@ -44,6 +54,15 @@ namespace PrivsXYZ.Controllers
         {
             ViewBag.LinkOK = true;
             ViewBag.DecryptSure = $"privs.xyz/PhotoDecryptSure/{messageAndKey}";
+
+            return View();
+        }
+
+        [HttpGet("DecryptFile/{messageAndKey}")]
+        public async Task<IActionResult> DecryptFile([FromRoute] string messageAndKey)
+        {
+            ViewBag.LinkOK = true;
+            ViewBag.DecryptSure = $"privs.xyz/FileDecryptSure/{messageAndKey}";
 
             return View();
         }
@@ -93,6 +112,48 @@ namespace PrivsXYZ.Controllers
 
             return View();
         }
+
+        [HttpGet("FileDecryptSure/{fileAndKey}")]
+        public async Task<IActionResult> FileDecryptSure([FromRoute] string fileAndKey)
+        {
+            var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
+            var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
+
+            string ipV4InString = ipAddressv4?.ToString();
+            string ipV6InString = ipAddressv6?.ToString();
+
+            string hostname = ipAddressv4?.ToString();
+
+            try
+            {
+                var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
+                hostname = hostEntry;
+                ViewBag.host = hostEntry;
+            }
+            catch
+            {
+                hostname = ipAddressv4?.ToString();
+            }
+
+            byte[] decryptedFile = new byte[0];
+            string fileName = "decryptedFile";
+
+            try
+            {
+                string fileKeyId = fileAndKey.Split('@')[0];
+                string fileKey = fileAndKey.Split('@')[1];
+
+                fileName = await _fileService.GetFileName(fileKeyId);
+                decryptedFile = await _fileService.DeleteAndDecryptFile(fileKeyId, fileKey, ipV4InString, ipV6InString, hostname);
+            }
+            catch (Exception e)
+            {
+                ViewBag.Image = "Wrong address.";
+            }
+
+            return File(decryptedFile, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
+        }
+
         [HttpGet("DecryptSure/{messageAndKey}")]
         public async Task<IActionResult> DecryptSureMessage([FromRoute] string messageAndKey)
         {
@@ -131,6 +192,7 @@ namespace PrivsXYZ.Controllers
         }
 
         [HttpPost("SendPhoto")]
+        [RequestSizeLimit(MaxFileSizeMB)]
         public async Task<IActionResult> SendPhoto(List<IFormFile> file)
         {
             try
@@ -156,6 +218,10 @@ namespace PrivsXYZ.Controllers
 
                 var photoEntity = file.ElementAt(0);
 
+                if (photoEntity.Length > MaxFileSizeMB)
+                {
+                    return View("TooLargeFile");
+                }
 
                 byte[] encryptedBytes = new byte[photoEntity.Length];
                 if (photoEntity.Length > 0)
@@ -169,6 +235,60 @@ namespace PrivsXYZ.Controllers
                 var endOfLink = await _photoService.CreateAndEncryptPhoto(encryptedBytes, ipV4InString, ipV6InString, hostname);
 
                 ViewBag.Link = $"https://privs.xyz/decryptPhoto/{endOfLink}";
+
+                return View();
+            }
+            catch (Exception e)
+            {
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost("SendFile")]
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxFileSizeMB)]
+        [RequestSizeLimit(MaxFileSizeMB)]
+        public async Task<IActionResult> SendFile(List<IFormFile> file)
+        {
+            try
+            {
+                var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
+                var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
+
+                string ipV4InString = ipAddressv4?.ToString();
+                string ipV6InString = ipAddressv6?.ToString();
+
+                string hostname = ipAddressv4?.ToString();
+
+                try
+                {
+                    var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
+                    hostname = hostEntry;
+                    ViewBag.host = hostEntry;
+                }
+                catch
+                {
+                    hostname = ipAddressv4.ToString();
+                }
+
+                var fileEntity = file.ElementAt(0);
+
+                if (fileEntity.Length > MaxFileSizeMB)
+                {
+                    return View("TooLargeFile");
+                }
+
+                byte[] encryptedBytes = new byte[fileEntity.Length];
+                if (fileEntity.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        fileEntity.CopyTo(ms);
+                        encryptedBytes = ms.ToArray();
+                    }
+                }
+                var endOfLink = await _fileService.CreateAndEncryptFile(encryptedBytes, ipV4InString, ipV6InString, hostname, fileEntity.FileName);
+
+                ViewBag.Link = $"https://privs.xyz/decryptFile/{endOfLink}";
 
                 return View();
             }

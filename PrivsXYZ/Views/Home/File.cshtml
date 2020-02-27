@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Prywatne wiadomosci";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Witaj na Privs.xyz!</h1>
+    <center>
+        <h4>Wybierz dowolny plik w formularzu poniżej. Następnie otrzymasz linka, którego będziesz mógł przekazać wybranej osobie. Pamiętaj, że dana osoba będzie mogła pobrać plik tylko 1 raz.<br /><br /><b>Max wielkość pliku - 5 MB</b></h4>
+        <br />
+        Dodatkowo pamiętaj, że dane są szyfrowane (m. in.) na podstawie klucza wygenerowanego w linku - oznacza to, że nikt - nawet administracja serwisu nie jest i nigdy nie będzie w stanie odczytać danych zawartych w pliku!<br /><br />
+    </center><br /><br />
+
+
+
+    @using (Html.BeginForm("SendFile",
+"Home",
+FormMethod.Post,
+new { enctype = "multipart/form-data" }))
+    {
+    <label for="file">Wybierz plik:</label><br />
+    <input type="file" name="file" id="file" /><br><br>
+    <input type="submit" value="Zaszyfruj plik!" />
+    <br><br>
+    }

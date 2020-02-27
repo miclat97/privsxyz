@@ -19,6 +19,13 @@ namespace PrivsXYZ
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .ConfigureKestrel((context, serverOptions) =>
+                {
+                    serverOptions.Limits.KeepAliveTimeout =
+                        TimeSpan.FromMinutes(10);
+                    serverOptions.Limits.RequestHeadersTimeout =
+                        TimeSpan.FromMinutes(10);
+                });
     }
 }

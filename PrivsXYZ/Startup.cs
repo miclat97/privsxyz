@@ -30,7 +30,7 @@ namespace PrivsXYZ
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-
+            
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -39,8 +39,7 @@ namespace PrivsXYZ
 
             services.AddTransient<IMessageService, MessageService>();
             services.AddTransient<IPhotoService, PhotoService>();
-
-            services.AddSignalR();
+            services.AddTransient<IFileService, FileService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -75,12 +74,6 @@ namespace PrivsXYZ
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<ChatHub>("/chattest");
-            });
-
         }
     }
 }

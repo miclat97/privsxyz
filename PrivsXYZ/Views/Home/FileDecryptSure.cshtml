@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Prywatne wiadomosci";
+}
+
+
+<center>
+    <h4>Pamiętaj, że po zamknięciu tej karty przeglądarki nie będzie żadnej możliwości na odzyskanie tego pliku!</h4>
+    <br /><br />
+
+    @if (ViewBag.Image != null)
+    {
+    <h1><a href="@ViewBag.File">Pobierz</a></h1>
+    }
+    else
+    {
+    @:Nie ma takiego pliku, bądź zły klucz do odszyfrowania!
+    }
+
+</center>

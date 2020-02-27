@@ -11,45 +11,46 @@ using System.Threading.Tasks;
 
 namespace PrivsXYZ.Services
 {
-    public class PhotoService : IPhotoService
+    public class FileService : IFileService
     {
         private readonly PrivsDbContext _context;
 
-        public PhotoService(PrivsDbContext context)
+        public FileService(PrivsDbContext context)
         {
             _context = context;
         }
 
-        public async Task<string> CreateAndEncryptPhoto(byte[] byteArray, string ipv4, string ipv6, string hostname)
+        public async Task<string> CreateAndEncryptFile(byte[] byteArray, string ipv4, string ipv6, string hostname, string fileName)
         {
             string keyIntoDb = RandomString(20);
             string keyToDecrypt = RandomString(25);
 
-            var photoWithGeneratedKey =
-                await _context.Photo.FirstOrDefaultAsync(f => f.PhotoIdentityString.Equals(keyIntoDb));
+            var fileWithGeneratedKey =
+                await _context.File.FirstOrDefaultAsync(f => f.FileIdentityString.Equals(keyIntoDb));
 
-            while (photoWithGeneratedKey != null)
+            while (fileWithGeneratedKey != null)
             {
                 keyIntoDb = RandomString(20);
-                photoWithGeneratedKey =
-                    await _context.Photo.FirstOrDefaultAsync(f => f.PhotoIdentityString.Equals(keyIntoDb));
+                fileWithGeneratedKey =
+                    await _context.File.FirstOrDefaultAsync(f => f.FileIdentityString.Equals(keyIntoDb));
             }
 
 
 
-            PhotoEntity newPhoto = new PhotoEntity()
+            FileEntity newFile = new FileEntity()
             {
-                PhotoIdentityString = keyIntoDb,
+                FileIdentityString = keyIntoDb,
                 CreatedDateTime = DateTime.Now,
                 IPv4Address = ipv4,
                 IPv6Address = ipv6,
                 Hostname = hostname,
-                Image = Encrypt(byteArray, keyToDecrypt)
+                File = Encrypt(byteArray, keyToDecrypt),
+                FileName = fileName
             };
 
 
 
-            await _context.Photo.AddAsync(newPhoto);
+            await _context.File.AddAsync(newFile);
             await _context.SaveChangesAsync();
             return $"{keyIntoDb}@{keyToDecrypt}";
         }
@@ -111,11 +112,11 @@ namespace PrivsXYZ.Services
             return finalString;
         }
 
-        public async Task<byte[]> DeleteAndDecryptPhoto(string photoKeyId, string photoKey, string ipv4, string ipv6, string hostname)
+        public async Task<byte[]> DeleteAndDecryptFile(string fileKeyId, string fileKey, string ipv4, string ipv6, string hostname)
         {
-            var photoEntityInDb =
-                await _context.Photo.FirstOrDefaultAsync(f => f.PhotoIdentityString.Equals(photoKeyId));
-            if (photoEntityInDb == null)
+            var fileEntityInDb =
+                await _context.File.FirstOrDefaultAsync(f => f.FileIdentityString.Equals(fileKeyId));
+            if (fileEntityInDb == null)
             {
                 return null;
             }
@@ -124,7 +125,7 @@ namespace PrivsXYZ.Services
 
             try
             {
-                decryptedPhoto = Decrypt(photoEntityInDb.Image, photoKey);
+                decryptedPhoto = Decrypt(fileEntityInDb.File, fileKey);
             }
             catch (Exception e)
             {
@@ -133,12 +134,12 @@ namespace PrivsXYZ.Services
 
             try
             {
-                photoEntityInDb.Image = new byte[0];
-                photoEntityInDb.ViewerIPv4 = ipv4;
-                photoEntityInDb.ViewerIPv6 = ipv6;
-                photoEntityInDb.ViewerHostname = hostname;
-                photoEntityInDb.OpenedDate = DateTime.Now;
-                _context.Update(photoEntityInDb);
+                fileEntityInDb.File = new byte[0];
+                fileEntityInDb.ViewerIPv4 = ipv4;
+                fileEntityInDb.ViewerIPv6 = ipv6;
+                fileEntityInDb.ViewerHostname = hostname;
+                fileEntityInDb.OpenedDate = DateTime.Now;
+                _context.Update(fileEntityInDb);
                 await _context.SaveChangesAsync();
                 return decryptedPhoto;
             }
@@ -146,6 +147,12 @@ namespace PrivsXYZ.Services
             {
                 return null;
             }
+        }
+
+        public async Task<string> GetFileName(string fileKeyId)
+        {
+            var file = await _context.File.FirstOrDefaultAsync(f => f.FileIdentityString.Equals(fileKeyId));
+            return file.FileName;
         }
     }
 }

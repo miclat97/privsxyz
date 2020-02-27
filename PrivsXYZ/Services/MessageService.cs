@@ -22,15 +22,15 @@ namespace PrivsXYZ.Services
 
         public async Task<string> CreateAndEncryptMessage(string message, string ipv4, string ipv6, string hostname)
         {
-            string keyIntoDb = RandomString(10);
-            string keyToDecrypt = RandomString(20);
+            string keyIntoDb = RandomString(20);
+            string keyToDecrypt = RandomString(25);
 
             var messageWithGeneratedKey =
                 await _context.Message.FirstOrDefaultAsync(f => f.MessageIdentityString.Equals(keyIntoDb));
 
             while (messageWithGeneratedKey != null)
             {
-                keyIntoDb = RandomString(10);
+                keyIntoDb = RandomString(20);
                 messageWithGeneratedKey =
                     await _context.Message.FirstOrDefaultAsync(f => f.MessageIdentityString.Equals(keyIntoDb));
             }
@@ -95,7 +95,7 @@ namespace PrivsXYZ.Services
             using (Aes encryptor = Aes.Create())
             {
                 Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(encryptionKey, new byte[] {
-                    0x57, 0x22, 0x61, 0x8e, 0xd0, 0x4f, 0xda, 0x3b, 0x7a, 0x55, 0x12, 0xff, 0xde
+                    0x57, 0x22, 0x61, 0x8e, 0xd0, 0x4f, 0xda, 0x3b, 0x7a, 0x55, 0x12, 0xff, 0xde, 0x54, 0x55, 0xdf, 0x33, 0x52, 0xaa, 0x2e
                 });
                 encryptor.Key = pdb.GetBytes(32);
                 encryptor.IV = pdb.GetBytes(16);
@@ -119,7 +119,7 @@ namespace PrivsXYZ.Services
             using (Aes encryptor = Aes.Create())
             {
                 Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(encryptionKey, new byte[] {
-                    0x57, 0x22, 0x61, 0x8e, 0xd0, 0x4f, 0xda, 0x3b, 0x7a, 0x55, 0x12, 0xff, 0xde
+                    0x57, 0x22, 0x61, 0x8e, 0xd0, 0x4f, 0xda, 0x3b, 0x7a, 0x55, 0x12, 0xff, 0xde, 0x54, 0x55, 0xdf, 0x33, 0x52, 0xaa, 0x2e
                 });
                 encryptor.Key = pdb.GetBytes(32);
                 encryptor.IV = pdb.GetBytes(16);
