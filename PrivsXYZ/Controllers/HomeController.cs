@@ -17,18 +17,30 @@ namespace PrivsXYZ.Controllers
         private readonly IMessageService _messageService;
         private readonly IPhotoService _photoService;
         private readonly IFileService _fileService;
+        private readonly IEntryCounterService _entryCounterService;
 
         private const int MaxFileSizeMB = 5 * 1024 * 1024;
 
-        public HomeController(IMessageService messageService, IPhotoService photoService, IFileService fileService)
+        public HomeController(IMessageService messageService, IPhotoService photoService, IFileService fileService,
+            IEntryCounterService entryCounterService)
         {
             _messageService = messageService;
             _photoService = photoService;
             _fileService = fileService;
+            _entryCounterService = entryCounterService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
+            var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
+
+            string ipV4InString = ipAddressv4?.ToString();
+            string ipV6InString = ipAddressv6?.ToString();
+
+            string hostname = ipAddressv4?.ToString();
+
+            await _entryCounterService.RegisterSiteEnter(ipV4InString, ipV6InString, hostname);
             return View();
         }
 

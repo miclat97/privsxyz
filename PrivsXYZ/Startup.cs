@@ -40,6 +40,7 @@ namespace PrivsXYZ
             services.AddTransient<IMessageService, MessageService>();
             services.AddTransient<IPhotoService, PhotoService>();
             services.AddTransient<IFileService, FileService>();
+            services.AddTransient<IEntryCounterService, EntryCounterService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

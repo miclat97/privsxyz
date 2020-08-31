@@ -18,5 +18,6 @@ namespace PrivsXYZ.Data
         public DbSet<MessageEntity> Message { get; set; }
         public DbSet<PhotoEntity> Photo { get; set; }
         public DbSet<FileEntity> File { get; set; }
+        public DbSet<EntryCounterEntity> EntryCounter { get; set; }
     }
 }
