@@ -132,7 +132,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> FileDecryptSure([FromRoute] string fileAndKey)
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "PhotoDecryptSure");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "FileDecryptSure");
 
             byte[] decryptedFile = new byte[0];
             string fileName = "decryptedFile";
@@ -157,7 +157,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> DecryptSureMessage([FromRoute] string messageAndKey)
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "MessageDecryptSure");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "DecryptSure");
 
             try
             {
@@ -257,7 +257,7 @@ namespace PrivsXYZ.Controllers
             try
             {
                 var userData = _userDataHelper.GetUserData();
-                await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "SendFile");
+                await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "SendMessage");
 
                 var endOfLink = await _messageService.CreateAndEncryptMessage(formModel.Message, userData.Item1, userData.Item2,
                     userData.Item3);
@@ -289,7 +289,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> TIP()
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "Ip");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "tip");
 
             ViewBag.ipv4 = userData.Item1;
             ViewBag.ipv6 = userData.Item2;
