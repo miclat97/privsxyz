@@ -127,7 +127,7 @@ namespace PrivsXYZ.Services
             {
                 decryptedPhoto = Decrypt(fileEntityInDb.File, fileKey);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -143,7 +143,7 @@ namespace PrivsXYZ.Services
                 await _context.SaveChangesAsync();
                 return decryptedPhoto;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }

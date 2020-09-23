@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PrivsXYZ.Data;
+using PrivsXYZ.Helpers;
 using PrivsXYZ.Services;
 using SignalRChat.Hubs;
 
@@ -30,7 +31,7 @@ namespace PrivsXYZ
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-            
+
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -41,6 +42,10 @@ namespace PrivsXYZ
             services.AddTransient<IPhotoService, PhotoService>();
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IEntryCounterService, EntryCounterService>();
+
+            services.AddTransient<IUserDataHelper, UserDataHelper>();
+
+            services.AddHttpContextAccessor();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

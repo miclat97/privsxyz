@@ -14,5 +14,6 @@ namespace PrivsXYZ.Entities
         public string IPv4Address { get; set; }
         public string IPv6Address { get; set; }
         public string Hostname { get; set; }
+        public string Site { get; set; }
     }
 }

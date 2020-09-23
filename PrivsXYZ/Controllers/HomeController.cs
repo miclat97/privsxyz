@@ -4,9 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PrivsXYZ.Helpers;
 using PrivsXYZ.Models;
 using PrivsXYZ.Services;
 
@@ -19,51 +21,63 @@ namespace PrivsXYZ.Controllers
         private readonly IFileService _fileService;
         private readonly IEntryCounterService _entryCounterService;
 
+        private readonly IUserDataHelper _userDataHelper;
+
         private const int MaxFileSizeMB = 5 * 1024 * 1024;
 
         public HomeController(IMessageService messageService, IPhotoService photoService, IFileService fileService,
-            IEntryCounterService entryCounterService)
+            IEntryCounterService entryCounterService, IUserDataHelper userDataHelper)
         {
             _messageService = messageService;
             _photoService = photoService;
             _fileService = fileService;
             _entryCounterService = entryCounterService;
+
+            _userDataHelper = userDataHelper;
         }
 
         public async Task<IActionResult> Index()
         {
-            var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
-            var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "Index");
 
-            string ipV4InString = ipAddressv4?.ToString();
-            string ipV6InString = ipAddressv6?.ToString();
+            return View();
+        }
 
-            string hostname = ipAddressv4?.ToString();
+        [HttpGet("GroupMessage")]
+        public async Task<IActionResult> GroupMessage()
+        {
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "GroupMessage");
 
-            await _entryCounterService.RegisterSiteEnter(ipV4InString, ipV6InString, hostname);
+
             return View();
         }
 
         [HttpGet("Photo")]
-        public IActionResult Photo()
+        public async Task<IActionResult> Photo()
         {
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "Photo");
+
             return View();
         }
 
         [HttpGet("File")]
-        public IActionResult File()
+        public async Task<IActionResult> File()
         {
-            return View();
-        }
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "GroupMessage");
 
-        public IActionResult Privacy()
-        {
             return View();
         }
 
         [HttpGet("DecryptPhoto/{messageAndKey}")]
         public async Task<IActionResult> DecryptPhoto([FromRoute] string messageAndKey)
         {
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "DecryptPhoto");
+
             ViewBag.LinkOK = true;
             ViewBag.DecryptSure = $"privs.xyz/PhotoDecryptSure/{messageAndKey}";
 
@@ -73,6 +87,9 @@ namespace PrivsXYZ.Controllers
         [HttpGet("DecryptFile/{messageAndKey}")]
         public async Task<IActionResult> DecryptFile([FromRoute] string messageAndKey)
         {
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "DecryptFile");
+
             ViewBag.LinkOK = true;
             ViewBag.DecryptSure = $"privs.xyz/FileDecryptSure/{messageAndKey}";
 
@@ -82,6 +99,9 @@ namespace PrivsXYZ.Controllers
         [HttpGet("Decrypt/{messageAndKey}")]
         public async Task<IActionResult> DecryptMessage([FromRoute] string messageAndKey)
         {
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "DecryptMessage");
+
             ViewBag.LinkOK = true;
             ViewBag.DecryptSure = $"privs.xyz/DecryptSure/{messageAndKey}";
 
@@ -91,33 +111,17 @@ namespace PrivsXYZ.Controllers
         [HttpGet("PhotoDecryptSure/{photoAndKey}")]
         public async Task<IActionResult> PhotoDecryptSure([FromRoute] string photoAndKey)
         {
-            var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
-            var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
-
-            string ipV4InString = ipAddressv4?.ToString();
-            string ipV6InString = ipAddressv6?.ToString();
-
-            string hostname = ipAddressv4?.ToString();
-
-            try
-            {
-                var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
-                hostname = hostEntry;
-                ViewBag.host = hostEntry;
-            }
-            catch
-            {
-                hostname = ipAddressv4?.ToString();
-            }
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "PhotoDecryptSure");
 
             try
             {
                 string photoKeyId = photoAndKey.Split('@')[0];
                 string photoKey = photoAndKey.Split('@')[1];
 
-                ViewBag.Image = await _photoService.DeleteAndDecryptPhoto(photoKeyId, photoKey, ipV4InString, ipV6InString, hostname);
+                ViewBag.Image = await _photoService.DeleteAndDecryptPhoto(photoKeyId, photoKey, userData.Item2, userData.Item2, userData.Item3);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 ViewBag.Image = "Wrong address.";
             }
@@ -128,24 +132,8 @@ namespace PrivsXYZ.Controllers
         [HttpGet("FileDecryptSure/{fileAndKey}")]
         public async Task<IActionResult> FileDecryptSure([FromRoute] string fileAndKey)
         {
-            var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
-            var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
-
-            string ipV4InString = ipAddressv4?.ToString();
-            string ipV6InString = ipAddressv6?.ToString();
-
-            string hostname = ipAddressv4?.ToString();
-
-            try
-            {
-                var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
-                hostname = hostEntry;
-                ViewBag.host = hostEntry;
-            }
-            catch
-            {
-                hostname = ipAddressv4?.ToString();
-            }
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "PhotoDecryptSure");
 
             byte[] decryptedFile = new byte[0];
             string fileName = "decryptedFile";
@@ -156,9 +144,9 @@ namespace PrivsXYZ.Controllers
                 string fileKey = fileAndKey.Split('@')[1];
 
                 fileName = await _fileService.GetFileName(fileKeyId);
-                decryptedFile = await _fileService.DeleteAndDecryptFile(fileKeyId, fileKey, ipV4InString, ipV6InString, hostname);
+                decryptedFile = await _fileService.DeleteAndDecryptFile(fileKeyId, fileKey, userData.Item1, userData.Item2, userData.Item3);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 ViewBag.Image = "Wrong address.";
             }
@@ -169,33 +157,18 @@ namespace PrivsXYZ.Controllers
         [HttpGet("DecryptSure/{messageAndKey}")]
         public async Task<IActionResult> DecryptSureMessage([FromRoute] string messageAndKey)
         {
-            var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
-            var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
-
-            string ipV4InString = ipAddressv4?.ToString();
-            string ipV6InString = ipAddressv6?.ToString();
-
-            string hostname = ipAddressv4?.ToString();
-
-            try
-            {
-                var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
-                hostname = hostEntry;
-                ViewBag.host = hostEntry;
-            }
-            catch
-            {
-                hostname = ipAddressv4.ToString();
-            }
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "MessageDecryptSure");
 
             try
             {
                 string messageKeyId = messageAndKey.Split('@')[0];
                 string messageKey = messageAndKey.Split('@')[1];
 
-                ViewBag.DecryptedMessage = await _messageService.DeleteAndDecryptMessage(messageKeyId, messageKey, ipV4InString, ipV6InString, hostname);
+                ViewBag.DecryptedMessage = await _messageService.DeleteAndDecryptMessage(messageKeyId, messageKey,
+                    userData.Item1, userData.Item2, userData.Item3);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 ViewBag.DecryptedMessage = "Wrong address.";
             }
@@ -207,27 +180,11 @@ namespace PrivsXYZ.Controllers
         [RequestSizeLimit(MaxFileSizeMB)]
         public async Task<IActionResult> SendPhoto(List<IFormFile> file)
         {
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "SendPhoto");
+
             try
             {
-                var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
-                var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
-
-                string ipV4InString = ipAddressv4?.ToString();
-                string ipV6InString = ipAddressv6?.ToString();
-
-                string hostname = ipAddressv4?.ToString();
-
-                try
-                {
-                    var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
-                    hostname = hostEntry;
-                    ViewBag.host = hostEntry;
-                }
-                catch
-                {
-                    hostname = ipAddressv4.ToString();
-                }
-
                 var photoEntity = file.ElementAt(0);
 
                 if (photoEntity.Length > MaxFileSizeMB)
@@ -244,13 +201,13 @@ namespace PrivsXYZ.Controllers
                         encryptedBytes = ms.ToArray();
                     }
                 }
-                var endOfLink = await _photoService.CreateAndEncryptPhoto(encryptedBytes, ipV4InString, ipV6InString, hostname);
+                var endOfLink = await _photoService.CreateAndEncryptPhoto(encryptedBytes, userData.Item1, userData.Item2, userData.Item3);
 
                 ViewBag.Link = $"https://privs.xyz/decryptPhoto/{endOfLink}";
 
                 return View();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return RedirectToAction("Index");
             }
@@ -261,27 +218,11 @@ namespace PrivsXYZ.Controllers
         [RequestSizeLimit(MaxFileSizeMB)]
         public async Task<IActionResult> SendFile(List<IFormFile> file)
         {
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "SendFile");
+
             try
             {
-                var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
-                var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
-
-                string ipV4InString = ipAddressv4?.ToString();
-                string ipV6InString = ipAddressv6?.ToString();
-
-                string hostname = ipAddressv4?.ToString();
-
-                try
-                {
-                    var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
-                    hostname = hostEntry;
-                    ViewBag.host = hostEntry;
-                }
-                catch
-                {
-                    hostname = ipAddressv4.ToString();
-                }
-
                 var fileEntity = file.ElementAt(0);
 
                 if (fileEntity.Length > MaxFileSizeMB)
@@ -298,13 +239,14 @@ namespace PrivsXYZ.Controllers
                         encryptedBytes = ms.ToArray();
                     }
                 }
-                var endOfLink = await _fileService.CreateAndEncryptFile(encryptedBytes, ipV4InString, ipV6InString, hostname, fileEntity.FileName);
+                var endOfLink = await _fileService.CreateAndEncryptFile(encryptedBytes, userData.Item1, userData.Item2, userData.Item3,
+                    fileEntity.FileName);
 
                 ViewBag.Link = $"https://privs.xyz/decryptFile/{endOfLink}";
 
                 return View();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return RedirectToAction("Index");
             }
@@ -315,83 +257,43 @@ namespace PrivsXYZ.Controllers
         {
             try
             {
-                var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
-                var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
+                var userData = _userDataHelper.GetUserData();
+                await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "SendFile");
 
-                string ipV4InString = ipAddressv4?.ToString();
-                string ipV6InString = ipAddressv6?.ToString();
-
-                string hostname = "zdlajYYGg1BlfxWWSUQ5nOuubLxcNN7tIG7oJxuq";
-
-                try
-                {
-                    var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
-                    hostname = hostEntry;
-                    ViewBag.host = hostEntry;
-                }
-                catch
-                {
-                    hostname = ipAddressv4.ToString();
-                }
-
-                var endOfLink = await _messageService.CreateAndEncryptMessage(formModel.Message, ipV4InString, ipV6InString, hostname);
+                var endOfLink = await _messageService.CreateAndEncryptMessage(formModel.Message, userData.Item1, userData.Item2, userData.Item3);
 
                 ViewBag.Link = $"https://privs.xyz/decrypt/{endOfLink}";
 
                 return View();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return RedirectToAction("Index");
             }
         }
 
         [HttpGet("ip")]
-        public IActionResult Ip()
+        public async Task<IActionResult> Ip()
         {
-            var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
-            var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "Ip");
 
-            ViewBag.ipv4 = ipAddressv4?.ToString();
-            ViewBag.ipv6 = ipAddressv6?.ToString();
-
-            string hostname = "zdlajYYGg1BlfxWWSUQ5nOuubLxcNN7tIG7oJxuq";
-
-            try
-            {
-                var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
-                hostname = hostEntry;
-                ViewBag.host = hostEntry;
-            }
-            catch
-            {
-                ViewBag.host = ipAddressv4.ToString();
-            }
+            ViewBag.ipv4 = userData.Item1;
+            ViewBag.ipv6 = userData.Item2;
+            ViewBag.host = userData.Item3;
 
             return View();
         }
 
         [HttpGet("tip")]
-        public IActionResult TIP()
+        public async Task<IActionResult> TIP()
         {
-            var ipAddressv4 = HttpContext.Connection.RemoteIpAddress.MapToIPv4();
-            var ipAddressv6 = HttpContext.Connection.RemoteIpAddress.MapToIPv6();
+            var userData = _userDataHelper.GetUserData();
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "Ip");
 
-            ViewBag.ipv4 = ipAddressv4?.ToString();
-            ViewBag.ipv6 = ipAddressv6?.ToString();
-
-            string hostname = "zdlajYYGg1BlfxWWSUQ5nOuubLxcNN7tIG7oJxuq";
-
-            try
-            {
-                var hostEntry = Dns.GetHostEntry(ipAddressv4?.ToString())?.HostName;
-                hostname = hostEntry;
-                ViewBag.host = hostEntry;
-            }
-            catch
-            {
-                ViewBag.host = ipAddressv4.ToString();
-            }
+            ViewBag.ipv4 = userData.Item1;
+            ViewBag.ipv6 = userData.Item2;
+            string hostname = userData.Item3;
 
             return View();
         }

@@ -8,6 +8,6 @@ namespace PrivsXYZ.Services
 {
     public interface IEntryCounterService
     {
-        Task RegisterSiteEnter(string ipv4, string ipv6, string hostname);
+        Task RegisterSiteEnter(string ipv4, string ipv6, string hostname, string site);
     }
 }

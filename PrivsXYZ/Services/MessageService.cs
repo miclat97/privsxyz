@@ -65,7 +65,7 @@ namespace PrivsXYZ.Services
             {
                 decryptedMessage = Decrypt(messageEntityInDb.EncryptedMessage, messageKey);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return "No message with this ID, or bad key!!!";
             }
@@ -81,7 +81,7 @@ namespace PrivsXYZ.Services
                 await _context.SaveChangesAsync();
                 return decryptedMessage;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return
                     "Error when trying to delete message from database, please try again or contact with administrator.";
