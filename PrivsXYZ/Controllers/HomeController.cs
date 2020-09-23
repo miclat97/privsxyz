@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PrivsXYZ.Helpers;
 using PrivsXYZ.Models;
 using PrivsXYZ.Services;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PrivsXYZ.Controllers
 {
@@ -39,7 +37,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> Index()
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "Index");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "Index");
 
             return View();
         }
@@ -48,7 +46,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> GroupMessage()
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "GroupMessage");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "GroupMessage");
 
 
             return View();
@@ -58,7 +56,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> Photo()
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "Photo");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "Photo");
 
             return View();
         }
@@ -67,7 +65,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> File()
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "GroupMessage");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "GroupMessage");
 
             return View();
         }
@@ -76,7 +74,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> DecryptPhoto([FromRoute] string messageAndKey)
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "DecryptPhoto");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "DecryptPhoto");
 
             ViewBag.LinkOK = true;
             ViewBag.DecryptSure = $"privs.xyz/PhotoDecryptSure/{messageAndKey}";
@@ -88,7 +86,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> DecryptFile([FromRoute] string messageAndKey)
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "DecryptFile");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "DecryptFile");
 
             ViewBag.LinkOK = true;
             ViewBag.DecryptSure = $"privs.xyz/FileDecryptSure/{messageAndKey}";
@@ -100,7 +98,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> DecryptMessage([FromRoute] string messageAndKey)
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "DecryptMessage");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "DecryptMessage");
 
             ViewBag.LinkOK = true;
             ViewBag.DecryptSure = $"privs.xyz/DecryptSure/{messageAndKey}";
@@ -112,14 +110,15 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> PhotoDecryptSure([FromRoute] string photoAndKey)
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "PhotoDecryptSure");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "PhotoDecryptSure");
 
             try
             {
                 string photoKeyId = photoAndKey.Split('@')[0];
                 string photoKey = photoAndKey.Split('@')[1];
 
-                ViewBag.Image = await _photoService.DeleteAndDecryptPhoto(photoKeyId, photoKey, userData.Item2, userData.Item2, userData.Item3);
+                ViewBag.Image = await _photoService.DeleteAndDecryptPhoto(photoKeyId, photoKey, userData.Item1,
+                    userData.Item2, userData.Item3);
             }
             catch (Exception)
             {
@@ -133,7 +132,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> FileDecryptSure([FromRoute] string fileAndKey)
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "PhotoDecryptSure");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "PhotoDecryptSure");
 
             byte[] decryptedFile = new byte[0];
             string fileName = "decryptedFile";
@@ -158,7 +157,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> DecryptSureMessage([FromRoute] string messageAndKey)
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "MessageDecryptSure");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "MessageDecryptSure");
 
             try
             {
@@ -181,7 +180,7 @@ namespace PrivsXYZ.Controllers
         public async Task<IActionResult> SendPhoto(List<IFormFile> file)
         {
             var userData = _userDataHelper.GetUserData();
-            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "SendPhoto");
+            await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item3, "SendPhoto");
 
             try
             {
@@ -260,7 +259,8 @@ namespace PrivsXYZ.Controllers
                 var userData = _userDataHelper.GetUserData();
                 await _entryCounterService.RegisterSiteEnter(userData.Item1, userData.Item2, userData.Item2, "SendFile");
 
-                var endOfLink = await _messageService.CreateAndEncryptMessage(formModel.Message, userData.Item1, userData.Item2, userData.Item3);
+                var endOfLink = await _messageService.CreateAndEncryptMessage(formModel.Message, userData.Item1, userData.Item2,
+                    userData.Item3);
 
                 ViewBag.Link = $"https://privs.xyz/decrypt/{endOfLink}";
 
@@ -293,7 +293,7 @@ namespace PrivsXYZ.Controllers
 
             ViewBag.ipv4 = userData.Item1;
             ViewBag.ipv6 = userData.Item2;
-            string hostname = userData.Item3;
+            ViewBag.host = userData.Item3;
 
             return View();
         }
